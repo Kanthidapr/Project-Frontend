@@ -281,3 +281,19 @@
   color: #7c3aed;
   cursor: pointer;
 }
+
+.tree-section img {
+  transition: all 0.5s ease;
+  transform: scale(1);
+}
+
+@keyframes grow {
+  from {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
