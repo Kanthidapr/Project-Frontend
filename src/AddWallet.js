@@ -6,17 +6,16 @@ function AddWallet({ onClose, onAdd }) {
 
   const handleSubmit = () => {
     if (!name) return;
-
-    onAdd(name); // ✅ ส่งชื่อกลับไป Home
+    onAdd(name);
+    setName("");
     onClose();
   };
 
   return (
-    <div className="modal-overlay">
-      <div className="modal">
+    <div className="wallet-box">
+      <h2 className="wallet-title">เพิ่มกระเป๋าตังค์</h2>
 
-        <h2>เพิ่มกระเป๋าตังค์</h2>
-
+      <div className="wallet-form">
         <input
           type="text"
           placeholder="ชื่อกระเป๋า"
@@ -24,14 +23,18 @@ function AddWallet({ onClose, onAdd }) {
           onChange={(e) => setName(e.target.value)}
         />
 
-        <div className="modal-buttons">
-          <button onClick={onClose}>ยกเลิก</button>
-          <button onClick={handleSubmit}>+ เพิ่ม</button>
-        </div>
+        <div className="wallet-buttons">
+          <button className="cancel" onClick={onClose}>
+            ยกเลิก
+          </button>
 
+          <button className="confirm" onClick={handleSubmit}>
+            + เพิ่ม
+          </button>
+        </div>
       </div>
     </div>
   );
 }
 
-export default AddWallet;
+export default AddWallet; // ⭐ ต้องมีบรรทัดนี้

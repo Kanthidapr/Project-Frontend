@@ -6,12 +6,10 @@ import treeBig from "./assets/tree-big.png";
 import AddWallet from "./AddWallet";
 
 function Home() {
-  // 🔥 state
-  const [transactions, setTransactions] = useState([]); // ยังใช้แค่ sidebar
-  const [wallets, setWallets] = useState([]); // ⭐ ใช้แสดงการ์ด
+  const [transactions, setTransactions] = useState([]);
+  const [wallets, setWallets] = useState([]);
   const [showModal, setShowModal] = useState(false);
 
-  // 🔥 fetch data (ไว้ใช้ sidebar + คำนวณต้นไม้)
   const fetchData = () => {
     fetch("http://127.0.0.1:8000/transactions")
       .then(res => res.json())
@@ -23,7 +21,6 @@ function Home() {
     fetchData();
   }, []);
 
-  // 🔥 คำนวณรายรับ/รายจ่าย (เอาไว้ใช้ต้นไม้)
   const income = transactions
     .filter(t => t.type === "income")
     .reduce((sum, t) => sum + t.amount, 0);
@@ -34,22 +31,15 @@ function Home() {
 
   const balance = income - expense;
 
-  // 🌳 เลือกต้นไม้
   let treeImage = treeSmall;
+  if (balance > 5000) treeImage = treeBig;
+  else if (balance > 1000) treeImage = treeMedium;
 
-  if (balance > 5000) {
-    treeImage = treeBig;
-  } else if (balance > 1000) {
-    treeImage = treeMedium;
-  }
-
-  // 🔥 เพิ่ม wallet
   const handleAddWallet = (walletName) => {
     const newWallet = {
       name: walletName,
       balance: 0,
     };
-
     setWallets(prev => [...prev, newWallet]);
   };
 
@@ -60,7 +50,12 @@ function Home() {
       <div className="sidebar">
         <h2>🌸 Money Tree</h2>
 
-        <button className="active">หน้าหลัก</button>
+        <button
+          className="active"
+          onClick={() => setShowModal(false)}
+        >
+          หน้าหลัก
+        </button>
 
         <button onClick={() => setShowModal(true)}>
           เพิ่มกระเป๋าตังค์
@@ -69,7 +64,6 @@ function Home() {
         <button>ลบกระเป๋าตังค์</button>
         <button>รายการ</button>
 
-        {/* 📜 รายการล่าสุด */}
         <div className="sidebar-recent">
           <h4>รายการล่าสุด</h4>
 
@@ -83,9 +77,7 @@ function Home() {
             </div>
           ))}
 
-          <div className="view-all">
-            ดูรายการ &gt;
-          </div>
+          <div className="view-all">ดูรายการ &gt;</div>
         </div>
       </div>
 
@@ -95,29 +87,29 @@ function Home() {
         {/* 🌳 LEFT */}
         <div className="left-panel">
           <div className="tree-section">
-            <img src={treeImage} alt="tree" className="grow" />
+            {showModal ? (
+              <AddWallet
+                onClose={() => setShowModal(false)}
+                onAdd={handleAddWallet}
+              />
+            ) : (
+              <img src={treeImage} alt="tree" className="grow" />
+            )}
           </div>
         </div>
 
         {/* 📊 RIGHT */}
         <div className="right-panel">
 
-          {/* 🔝 Header */}
           <div className="header">
             <h3>🌸 Money Tree</h3>
-
-            <div className="header-right">
-              🔔
-              👤
-            </div>
+            <div className="header-right">🔔 👤</div>
           </div>
 
-          {/* 🌱 Progress */}
           <div className="progress-bar">
             <div className="progress-fill"></div>
           </div>
 
-          {/* 💰 Summary */}
           <div className="summary">
             <div className="card income">
               <p>รายรับ</p>
@@ -130,7 +122,7 @@ function Home() {
             </div>
           </div>
 
-          {/* 🧩 Wallet Cards เท่านั้น */}
+          {/* 💼 Wallet */}
           <div className="cards">
             {wallets.length === 0 ? (
               <p style={{ opacity: 0.5 }}>ยังไม่มีกระเป๋า</p>
@@ -147,14 +139,6 @@ function Home() {
 
         </div>
       </div>
-
-      {/* 🔥 Modal */}
-      {showModal && (
-        <AddWallet
-          onClose={() => setShowModal(false)}
-          onAdd={handleAddWallet}
-        />
-      )}
 
     </div>
   );

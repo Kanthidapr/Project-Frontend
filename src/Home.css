@@ -282,9 +282,10 @@
   cursor: pointer;
 }
 
-.tree-section img {
-  transition: all 0.5s ease;
-  transform: scale(1);
+.tree-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 @keyframes grow {
