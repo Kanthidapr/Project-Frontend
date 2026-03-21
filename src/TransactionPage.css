@@ -1,0 +1,88 @@
+.transaction-page {
+  background: linear-gradient(135deg, #f8f3ff, #fff);
+  padding: 25px;
+  border-radius: 25px;
+}
+
+/* HEADER */
+.tp-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tp-tabs button {
+  border: none;
+  padding: 8px 16px;
+  margin: 0 5px;
+  border-radius: 20px;
+  background: #eee;
+  cursor: pointer;
+}
+
+.tp-tabs .active {
+  background: linear-gradient(90deg, #d8b4fe, #f9a8d4);
+  color: white;
+}
+
+/* SUMMARY */
+.tp-summary {
+  display: flex;
+  justify-content: flex-end;
+  gap: 20px;
+  margin: 15px 0;
+}
+
+.tp-summary .income {
+  color: green;
+  font-weight: bold;
+}
+
+.tp-summary .expense {
+  color: red;
+  font-weight: bold;
+}
+
+/* TABLE */
+.tp-table {
+  margin-top: 10px;
+  border-radius: 15px;
+  overflow: hidden;
+}
+
+.tp-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 2fr 1fr;
+  padding: 12px;
+  background: white;
+  border-bottom: 1px solid #eee;
+}
+
+.tp-row.header {
+  background: #f3e8ff;
+  font-weight: bold;
+}
+
+.tp-row:nth-child(even) {
+  background: #fafafa;
+}
+
+.income {
+  color: green;
+  font-weight: bold;
+}
+
+.expense {
+  color: red;
+  font-weight: bold;
+}
+
+/* BACK BUTTON */
+.back-btn {
+  margin-top: 15px;
+  padding: 8px 16px;
+  border-radius: 10px;
+  border: none;
+  background: #ddd;
+  cursor: pointer;
+}

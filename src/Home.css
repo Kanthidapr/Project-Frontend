@@ -298,3 +298,74 @@
     opacity: 1;
   }
 }
+
+.main.full {
+  display: block;
+}
+
+.main.full .right-panel {
+  display: none;
+}
+
+.recent-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.recent-left {
+  display: flex;
+  flex-direction: column;
+}
+
+.recent-date {
+  font-size: 12px;
+  color: #888;
+}
+
+.recent-title {
+  font-weight: 500;
+}
+
+.recent-amount.income {
+  color: green;
+}
+
+.recent-amount.expense {
+  color: red;
+}
+
+.recent-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.recent-left {
+  display: flex;
+  flex-direction: column;
+}
+
+.recent-date {
+  font-size: 12px;
+  opacity: 0.6;
+}
+
+.recent-title {
+  font-weight: 500;
+}
+
+.recent-amount {
+  font-weight: bold;
+}
+
+.recent-amount.income {
+  color: green;
+}
+
+.recent-amount.expense {
+  color: red;
+}
