@@ -1,61 +1,68 @@
 .wallet-box {
-  width: 90%;
-  max-width: 500px;
-
-  background: #ffffff;
-  border-radius: 20px;
-  padding: 30px;
-
-  box-shadow: 0 15px 40px rgba(0,0,0,0.08);
+  position: relative;
+  z-index: 2;
+  width: 80%;
+  max-width: 360px;
+  background: rgba(255, 255, 255, 0.9); 
+  backdrop-filter: blur(10px); 
+  border-radius: 25px;
+  padding: 30px 25px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.5);
 
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
 
-/* Title */
-.wallet-title {
-  font-size: 24px;
-  font-weight: 600;
-}
-
-/* Form */
 .wallet-form {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 25px; 
 }
 
-/* Input */
 .wallet-form input {
-  padding: 12px;
-  border-radius: 12px;
-  border: 1px solid #ddd;
-  font-size: 14px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 15px;
+  border-radius: 15px;
+  border: 1px solid #edf2f7;
+  background: white;
+  font-size: 15px;
+  outline: none;
+  transition: 0.3s;
 }
 
-/* Buttons row */
 .wallet-buttons {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  gap: 15px;
 }
 
-/* Cancel */
-.cancel {
-  background: #eee;
-  border: none;
-  padding: 10px 16px;
-  border-radius: 10px;
-  cursor: pointer;
-}
-
-/* Confirm */
-.confirm {
-  background: linear-gradient(135deg, #ff9ad5, #a78bfa);
-  border: none;
-  color: white;
-  padding: 10px 18px;
+.wallet-buttons button {
+  flex: 1; 
+  padding: 12px 0;
   border-radius: 12px;
   cursor: pointer;
+  font-size: 15px;
+  transition: 0.3s;
+  border: none;
+}
+
+.cancel {
+  background: #f7fafc;
+  color: #718096;
+  font-weight: 500;
+}
+
+.confirm {
+  background: linear-gradient(135deg, #ff9ad5, #a78bfa);
+  color: white;
+  font-weight: 600;
+  box-shadow: 0 8px 15px rgba(167, 139, 250, 0.25);
+}
+
+.confirm:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.05);
 }

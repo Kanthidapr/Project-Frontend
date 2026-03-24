@@ -8,37 +8,58 @@
 
 /* 🌸 Sidebar */
 .sidebar {
-  width: 250px;
-  background: linear-gradient(180deg, #f3e8ff, #e9d5ff);
-  padding: 25px;
-  border-radius: 0 30px 30px 0;
+  width: 260px;
+  background: linear-gradient(180deg, #fdf4ff 0%, #fae8ff 100%);
+  border-radius: 0 40px 40px 0;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 4px 0 15px rgba(0,0,0,0.02);
 }
 
 .sidebar h2 {
-  margin-bottom: 25px;
+  font-size: 20px;
+  color: #7c3aed;
+  margin-bottom: 30px;
+  padding-left: 10px;
 }
 
-/* 🔘 ปุ่ม */
+/* 🔘 ปุ่มเมนู */
 .sidebar button {
-  display: block;
+  display: flex;
+  align-items: center;
   width: 100%;
-  margin: 12px 0;
-  padding: 12px;
-  border-radius: 20px;
+  margin: 8px 0;
+  padding: 14px 20px;
+  border-radius: 18px;
   border: none;
   background: white;
+  color: #6b7280;
   cursor: pointer;
   font-size: 14px;
-  transition: 0.2s;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.02);
 }
 
 .sidebar button:hover {
-  background: #ddd6fe;
+  background: #f3e8ff;
+  color: #7c3aed;
+  transform: translateX(5px);
 }
 
 .sidebar .active {
-  background: #c4b5fd;
+  background: #7c3aed;
   color: white;
+  box-shadow: 0 8px 15px rgba(124, 58, 237, 0.2);
+}
+
+/* 📜 รายการล่าสุดใน Sidebar */
+.sidebar-recent {
+  margin-top: auto;
+  background: rgba(255, 255, 255, 0.5);
+  padding: 15px;
+  border-radius: 20px;
+  backdrop-filter: blur(5px);
 }
 
 /* 🧩 Main */
@@ -61,27 +82,29 @@
 /* 🌳 Tree Card */
 .tree-section {
   background: white;
-  padding: 25px;
-  border-radius: 25px;
   width: 420px;
   height: 600px;
+  border-radius: 30px;
+  overflow: hidden;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 15px 40px rgba(0,0,0,0.12);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+  padding: 0;
+  border: none;
 }
 
 .tree-section img {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.5s ease;
 }
 
 /* 📊 RIGHT */
 .right-panel {
   flex: 1;
   display: flex;
-  flex-direction: column; /* 👈 สำคัญ */
+  flex-direction: column;
 }
 
 /* 🔝 Header */
