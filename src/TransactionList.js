@@ -1,11 +1,39 @@
 import { useState } from "react";
 import "./TransactionList.css";
 
-function TransactionList({ transactions, onDeleteTransaction, onEditTransaction, onBack }) {
-
+function TransactionList({
+  transactions,
+  onBack,
+  refreshData
+}) {
   const [editID, setEditID] = useState(null);
   const [editTitle, setEditTitle] = useState("");
   const [editAmount, setEditAmount] = useState("");
+
+  // ❌ ลบ
+  const handleDelete = (id) => {
+    fetch(`http://127.0.0.1:8000/transactions/${id}`, {
+      method: "DELETE",
+    }).then(() => refreshData());
+  };
+
+  // ✏️ edit
+  const handleEdit = (tx) => {
+    fetch(`http://127.0.0.1:8000/transactions/${tx.id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        title: tx.title,
+        amount: tx.amount,
+        wallet: tx.wallet
+      }),
+    }).then(() => {
+      setEditID(null);
+      refreshData();
+    });
+  };
 
   return (
     <div className="tx-container">
@@ -55,14 +83,13 @@ function TransactionList({ transactions, onDeleteTransaction, onEditTransaction,
 
                   <td>
                     <button
-                      onClick={() => {
-                        onEditTransaction({
+                      onClick={() =>
+                        handleEdit({
                           ...tx,
                           title: editTitle,
                           amount: Number(editAmount),
-                        });
-                        setEditID(null);
-                      }}
+                        })
+                      }
                     >
                       💾
                     </button>
@@ -93,7 +120,7 @@ function TransactionList({ transactions, onDeleteTransaction, onEditTransaction,
                     </button>
 
                     <button
-                      onClick={() => onDeleteTransaction(tx.id)}
+                      onClick={() => handleDelete(tx.id)}
                       style={{ color: "red", marginLeft: 5 }}
                     >
                       🗑

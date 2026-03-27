@@ -7,82 +7,82 @@ import treeBig from "./assets/tree-big.png";
 
 import AddWallet from "./AddWallet";
 import DeleteWallet from "./DeleteWallet";
-import WalletDetail from "./WalletDetail";
 import TransactionList from "./TransactionList";
+import WalletDetail from "./WalletDetail";
 
 function Home() {
   const [transactions, setTransactions] = useState([]);
   const [wallets, setWallets] = useState([]);
-
-  const [mode, setMode] = useState("home"); 
-  // home | add | delete | detail | list
-
+  const [mode, setMode] = useState("home");
   const [selectedWallet, setSelectedWallet] = useState(null);
 
+  // โหลดข้อมูล
   useEffect(() => {
-    setTransactions([]);
+    fetchTransactions();
+    fetchWallets();
   }, []);
 
-  // ✅ คำนวณ
+  const fetchTransactions = () => {
+    fetch("http://127.0.0.1:8000/transactions")
+      .then(res => res.json())
+      .then(data => {
+        const formatted = data.map(t => ({
+          ...t,
+          id: t._id,
+          type: t.amount > 0 ? "income" : "expense"
+        }));
+        setTransactions(formatted);
+      });
+  };
+
+  const fetchWallets = () => {
+    fetch("http://127.0.0.1:8000/wallets")
+      .then(res => res.json())
+      .then(data => setWallets(data));
+  };
+
+  // คำนวณ
   const income = transactions
     .filter(t => t.type === "income")
-    .reduce((sum, t) => sum + t.amount, 0);
+    .reduce((sum, t) => sum + Math.abs(t.amount), 0);
 
   const expense = transactions
     .filter(t => t.type === "expense")
-    .reduce((sum, t) => sum + t.amount, 0);
+    .reduce((sum, t) => sum + Math.abs(t.amount), 0);
 
   const balance = income - expense;
 
-  // 🌳 tree
+  // 🌳 รูปเดิม (ไม่แตะ)
   let treeImage = treeSmall;
   if (balance > 5000) treeImage = treeBig;
   else if (balance > 1000) treeImage = treeMedium;
 
-  // ✅ เพิ่ม wallet
+  // เพิ่ม wallet
   const handleAddWallet = (walletName) => {
-    const newWallet = {
-      name: walletName,
-      balance: 0,
-    };
-    setWallets(prev => [...prev, newWallet]);
+    fetch("http://127.0.0.1:8000/wallets", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ name: walletName, balance: 0 }),
+    }).then(() => fetchWallets());
   };
 
-  // ✅ ลบ wallet
+  // ลบ wallet
   const handleDeleteWallet = (name) => {
-    setWallets(prev => prev.filter(w => w.name !== name));
+    fetch(`http://127.0.0.1:8000/wallets/${name}`, {
+      method: "DELETE",
+    }).then(() => fetchWallets());
   };
 
-  // 🗑 ลบรายการ
+  // ลบ transaction
   const handleDeleteTransaction = (id) => {
-    setTransactions(prev => prev.filter(t => t.id !== id));
-  };
-
-  // ✏️ แก้รายการ
-  const handleEditTransaction = (updatedTx) => {
-    setTransactions(prev =>
-      prev.map(t => (t.id === updatedTx.id ? updatedTx : t))
-    );
-  };
-
-  // ✅ เพิ่ม transaction
-  const handleAddTransaction = (tx) => {
-    setTransactions(prev => [...prev, tx]);
-
-    // อัพเดทยอด wallet
-    setWallets(prev =>
-      prev.map(w =>
-        w.name === tx.wallet
-          ? {
-              ...w,
-              balance:
-                tx.type === "income"
-                  ? w.balance + Math.abs(tx.amount)
-                  : w.balance - Math.abs(tx.amount),
-            }
-          : w
-      )
-    );
+    fetch(`http://127.0.0.1:8000/transactions/${id}`, {
+      method: "DELETE",
+    }).then(() => {
+      fetchTransactions();
+      fetchWallets();
+    });
   };
 
   return (
@@ -93,91 +93,106 @@ function Home() {
         <h2>🌸 Money Tree</h2>
 
         <button onClick={() => setMode("home")}>หน้าหลัก</button>
+        <button onClick={() => setMode("add")}>เพิ่มกระเป๋า</button>
+        <button onClick={() => setMode("delete")}>ลบกระเป๋า</button>
+        <button onClick={() => setMode("list")}>รายการ</button>
 
-        <button onClick={() => setMode("add")}>
-          เพิ่มกระเป๋าตังค์
-        </button>
-
-        <button onClick={() => setMode("delete")}>
-          ลบกระเป๋าตังค์
-        </button>
-
-        <button onClick={() => setMode("list")}>
-          รายการ
-        </button>
-
-        {/* 📜 ล่าสุด */}
         <div className="sidebar-recent">
           <h4>รายการล่าสุด</h4>
 
           {transactions.length === 0 ? (
             <p style={{ opacity: 0.5 }}>ยังไม่มีรายการ</p>
           ) : (
-            transactions
-              .slice(-3)
-              .reverse()
-              .map((t, i) => (
-                <div key={i} className="recent-item">
-                  <div className="recent-left">
-                    <div className="recent-date">{t.date}</div>
-                    <div className="recent-title">{t.title}</div>
-                  </div>
-
-                  <div className={`recent-amount ${t.type}`}>
-                    {t.type === "income" ? "+" : "-"}
-                    {Math.abs(t.amount)}
-                  </div>
+            transactions.slice(-3).reverse().map((t, i) => (
+              <div key={i} className="recent-item">
+                <div className="recent-left">
+                  <div className="recent-date">{t.date}</div>
+                  <div className="recent-title">{t.title}</div>
                 </div>
-              ))
+
+                <div className={`recent-amount ${t.type}`}>
+                  {t.type === "income" ? "+" : "-"}
+                  {Math.abs(t.amount)}
+                </div>
+              </div>
+            ))
           )}
         </div>
       </div>
 
-      {/* 🧩 MAIN */}
-      {mode === "list" ? (
+      {/* MAIN */}
+      {mode === "walletDetail" ? (
+        <div className="main full">
+          <WalletDetail
+            wallet={selectedWallet}
+            transactions={transactions}
+
+            onBack={() => setMode("home")}
+
+            onAddTransaction={(tx) => {
+              fetch("http://127.0.0.1:8000/transactions", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify(tx),
+              }).then(() => {
+                fetchTransactions();
+                fetchWallets();
+              });
+            }}
+
+            onDeleteTransaction={(id) => {
+              fetch(`http://127.0.0.1:8000/transactions/${id}`, {
+                method: "DELETE",
+              }).then(() => {
+                fetchTransactions();
+                fetchWallets();
+              });
+            }}
+
+            onEditTransaction={(tx) => {
+              fetch(`http://127.0.0.1:8000/transactions/${tx.id}`, {
+                method: "PUT",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify(tx),
+              }).then(() => {
+                fetchTransactions();
+                fetchWallets();
+              });
+            }}
+          />
+        </div>
+      ) : mode === "list" ? (
         <div className="main full">
           <TransactionList
             transactions={transactions}
             onDeleteTransaction={handleDeleteTransaction}
-            onEditTransaction={handleEditTransaction}
             onBack={() => setMode("home")}
           />
         </div>
       ) : (
         <div className="main">
 
-          {/* 🌳 LEFT */}
+          {/* 🌳 LEFT (เหมือนเดิม 100%) */}
           <div className="left-panel">
             <div className="tree-section">
 
-              {mode === "add" && (
+              {mode === "add" ? (
                 <AddWallet
-                  onClose={() => setMode("home")}
                   onAdd={handleAddWallet}
+                  onClose={() => setMode("home")}
                 />
-              )}
-
-              {mode === "delete" && (
+              ) : mode === "delete" ? (
                 <DeleteWallet
                   wallets={wallets}
                   onDelete={handleDeleteWallet}
                   onClose={() => setMode("home")}
                 />
-              )}
-
-              {mode === "detail" && selectedWallet && (
-                <WalletDetail
-                  wallet={selectedWallet}
-                  onBack={() => setMode("home")}
-                  onAddTransaction={handleAddTransaction}
-                  onDeleteTransaction={handleDeleteTransaction}
-                  onEditTransaction={handleEditTransaction}
-                  transactions={transactions}
-                />
-              )}
-
-              {mode === "home" && (
-                <img src={treeImage} alt="tree" className="grow" />
+              ) : (
+                <img src={treeImage} alt="tree" />
               )}
 
             </div>
@@ -212,13 +227,13 @@ function Home() {
               {wallets.length === 0 ? (
                 <p style={{ opacity: 0.5 }}>ยังไม่มีกระเป๋า</p>
               ) : (
-                wallets.map((w, i) => (
+                wallets.map(w => (
                   <div
-                    key={i}
+                    key={w._id}
                     className="item-card"
                     onClick={() => {
                       setSelectedWallet(w);
-                      setMode("detail");
+                      setMode("walletDetail");
                     }}
                   >
                     💼 {w.name}

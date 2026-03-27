@@ -1,10 +1,36 @@
 import "./TransactionPage.css";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
-function TransactionPage({ transactions, onBack }) {
-  const [filter, setFilter] = useState("all"); 
-  // all | income | expense
+function TransactionPage({ onBack }) {
+  const [transactions, setTransactions] = useState([]);
+  const [filter, setFilter] = useState("all");
 
+  useEffect(() => {
+    fetchTransactions();
+  }, []);
+
+  const fetchTransactions = () => {
+    fetch("http://127.0.0.1:8000/transactions")
+      .then((res) => res.json())
+      .then((data) => {
+        const formatted = data.map((t) => ({
+          ...t,
+          id: t._id,
+          type: t.amount > 0 ? "income" : "expense",
+        }));
+        setTransactions(formatted);
+      })
+      .catch((err) => console.error("Error:", err));
+  };
+
+  // ❌ ลบ transaction
+  const handleDelete = (id) => {
+    fetch(`http://127.0.0.1:8000/transactions/${id}`, {
+      method: "DELETE",
+    }).then(() => fetchTransactions());
+  };
+
+  // 🔍 filter
   const filtered = transactions.filter((t) => {
     if (filter === "all") return true;
     return t.type === filter;
@@ -12,78 +38,51 @@ function TransactionPage({ transactions, onBack }) {
 
   return (
     <div className="transaction-page">
+      <h2>📋 รายการทั้งหมด</h2>
 
-      {/* 🌸 Header */}
-      <div className="tp-header">
-        <h2>📋 รายการทั้งหมด</h2>
-
-        <div className="tp-tabs">
-          <button
-            className={filter === "income" ? "active" : ""}
-            onClick={() => setFilter("income")}
-          >
-            รายรับ
-          </button>
-
-          <button
-            className={filter === "expense" ? "active" : ""}
-            onClick={() => setFilter("expense")}
-          >
-            รายจ่าย
-          </button>
-
-          <button
-            className={filter === "all" ? "active" : ""}
-            onClick={() => setFilter("all")}
-          >
-            ทั้งหมด
-          </button>
-        </div>
+      {/* 🔘 Filter */}
+      <div className="filter-buttons">
+        <button onClick={() => setFilter("all")}>ทั้งหมด</button>
+        <button onClick={() => setFilter("income")}>รายรับ</button>
+        <button onClick={() => setFilter("expense")}>รายจ่าย</button>
       </div>
 
-      {/* 💰 Summary */}
-      <div className="tp-summary">
-        <div className="income">
-          +{transactions
-            .filter(t => t.type === "income")
-            .reduce((s, t) => s + t.amount, 0)} บาท
-        </div>
+      {/* 📄 LIST */}
+      <div className="transaction-list">
+        {filtered.length > 0 ? (
+          filtered.map((t) => (
+            <div
+              key={t.id}
+              className={`item ${t.type === "income" ? "plus" : "minus"}`}
+            >
+              <span>{t.date}</span>
 
-        <div className="expense">
-          -{transactions
-            .filter(t => t.type === "expense")
-            .reduce((s, t) => s + t.amount, 0)} บาท
-        </div>
-      </div>
+              <strong>{t.title}</strong>
 
-      {/* 📊 Table */}
-      <div className="tp-table">
-        <div className="tp-row header">
-          <div>วันที่</div>
-          <div>ประเภท</div>
-          <div>หมวดหมู่</div>
-          <div>หมายเหตุ</div>
-          <div>จำนวนเงิน</div>
-        </div>
+              <span>({t.wallet})</span>
 
-        {filtered.map((t) => (
-          <div className="tp-row" key={t.id}>
-            <div>{t.date}</div>
-            <div>
-              {t.type === "income" ? "💰 รายรับ" : "💸 รายจ่าย"}
+              <b style={{ color: t.type === "income" ? "green" : "red" }}>
+                {t.type === "income" ? "+" : "-"}
+                {Math.abs(t.amount)} บาท
+              </b>
+
+              {/* 🗑 ปุ่มลบ */}
+              <button
+                onClick={() => handleDelete(t.id)}
+                style={{ marginLeft: 10, color: "red" }}
+              >
+                🗑
+              </button>
             </div>
-            <div>{t.wallet}</div>
-            <div>{t.title}</div>
-            <div className={t.type}>
-              {t.type === "income" ? "+" : "-"}
-              {t.amount}
-            </div>
-          </div>
-        ))}
+          ))
+        ) : (
+          <p>ไม่มีข้อมูลรายการ</p>
+        )}
       </div>
 
-      <button className="back-btn" onClick={onBack}>
-        ← กลับ
+      <hr />
+      <button onClick={onBack} className="back-btn">
+        กลับหน้าหลัก
       </button>
     </div>
   );
