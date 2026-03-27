@@ -12,27 +12,34 @@ function TransactionList({
 
   // ❌ ลบ
   const handleDelete = (id) => {
-    fetch(`http://127.0.0.1:8000/transactions/${id}`, {
+    fetch(`http://192.168.56.1:8000/transactions/${id}`, {
       method: "DELETE",
-    }).then(() => refreshData());
+    })
+      .then(() => refreshData())
+      .catch(err => console.error("delete error:", err));
   };
 
   // ✏️ edit
   const handleEdit = (tx) => {
-    fetch(`http://127.0.0.1:8000/transactions/${tx.id}`, {
+    fetch(`http://192.168.56.1:8000/transactions/${tx.id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        title: tx.title,
-        amount: tx.amount,
+        title: editTitle,
+        amount:
+          tx.type === "expense"
+            ? -Math.abs(Number(editAmount))
+            : Math.abs(Number(editAmount)),
         wallet: tx.wallet
       }),
-    }).then(() => {
-      setEditID(null);
-      refreshData();
-    });
+    })
+      .then(() => {
+        setEditID(null);
+        refreshData();
+      })
+      .catch(err => console.error("edit error:", err));
   };
 
   return (
@@ -64,7 +71,6 @@ function TransactionList({
 
               <td>{tx.wallet}</td>
 
-              {/* ✏️ EDIT MODE */}
               {editID === tx.id ? (
                 <>
                   <td>
@@ -82,15 +88,7 @@ function TransactionList({
                   </td>
 
                   <td>
-                    <button
-                      onClick={() =>
-                        handleEdit({
-                          ...tx,
-                          title: editTitle,
-                          amount: Number(editAmount),
-                        })
-                      }
-                    >
+                    <button onClick={() => handleEdit(tx)}>
                       💾
                     </button>
                   </td>
@@ -113,7 +111,7 @@ function TransactionList({
                       onClick={() => {
                         setEditID(tx.id);
                         setEditTitle(tx.title);
-                        setEditAmount(tx.amount);
+                        setEditAmount(Math.abs(tx.amount)); // ✅ แก้ตรงนี้
                       }}
                     >
                       ✏️

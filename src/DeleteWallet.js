@@ -10,19 +10,21 @@ function DeleteWallet({ wallets, onDelete, onClose }) {
       return;
     }
 
-    // ยืนยันการลบ
     if (!window.confirm(`คุณแน่ใจใช่ไหมที่จะลบกระเป๋า "${selected}"?`)) return;
 
     try {
-      // 🚀 1. ส่งคำขอ DELETE ไปที่ Backend โดยแนบชื่อกระเป๋าไปใน URL
-      const response = await fetch(`http://127.0.0.1:8000/wallets/${selected}`, {
-        method: "DELETE",
-      });
+      // ✅ แก้: encode URL กันชื่อภาษาไทยพัง
+      const response = await fetch(
+        `http://127.0.0.1:8000/wallets/${encodeURIComponent(selected)}`,
+        {
+          method: "DELETE",
+        }
+      );
 
       if (response.ok) {
-        // 🚀 2. บอกหน้าหลักให้ Update UI (ลบชื่อนี้ออกจาก List ในหน้าจอ)
+        // ✅ ให้ Home refresh ใหม่
         if (onDelete) onDelete(selected);
-        
+
         alert("ลบกระเป๋าเงินเรียบร้อยแล้ว");
         onClose();
       } else {
