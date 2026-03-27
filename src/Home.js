@@ -16,7 +16,6 @@ function Home() {
   const [mode, setMode] = useState("home");
   const [selectedWallet, setSelectedWallet] = useState(null);
 
-  // โหลดข้อมูล
   useEffect(() => {
     fetchTransactions();
     fetchWallets();
@@ -41,7 +40,6 @@ function Home() {
       .then(data => setWallets(data));
   };
 
-  // คำนวณ
   const income = transactions
     .filter(t => t.type === "income")
     .reduce((sum, t) => sum + Math.abs(t.amount), 0);
@@ -52,12 +50,10 @@ function Home() {
 
   const balance = income - expense;
 
-  // 🌳 รูปเดิม (ไม่แตะ)
   let treeImage = treeSmall;
   if (balance > 5000) treeImage = treeBig;
   else if (balance > 1000) treeImage = treeMedium;
 
-  // เพิ่ม wallet
   const handleAddWallet = (walletName) => {
     fetch("http://127.0.0.1:8000/wallets", {
       method: "POST",
@@ -68,14 +64,11 @@ function Home() {
     }).then(() => fetchWallets());
   };
 
-  // ลบ wallet
-  const handleDeleteWallet = (name) => {
-    fetch(`http://127.0.0.1:8000/wallets/${name}`, {
-      method: "DELETE",
-    }).then(() => fetchWallets());
+  // ✅ แก้ตรงนี้: ไม่ยิง DELETE ซ้ำแล้ว
+  const handleDeleteWallet = () => {
+    fetchWallets();
   };
 
-  // ลบ transaction
   const handleDeleteTransaction = (id) => {
     fetch(`http://127.0.0.1:8000/transactions/${id}`, {
       method: "DELETE",
@@ -88,7 +81,6 @@ function Home() {
   return (
     <div className="home-container">
 
-      {/* 🌸 Sidebar */}
       <div className="sidebar">
         <h2>🌸 Money Tree</h2>
 
@@ -120,13 +112,11 @@ function Home() {
         </div>
       </div>
 
-      {/* MAIN */}
       {mode === "walletDetail" ? (
         <div className="main full">
           <WalletDetail
             wallet={selectedWallet}
             transactions={transactions}
-
             onBack={() => setMode("home")}
 
             onAddTransaction={(tx) => {
@@ -176,10 +166,8 @@ function Home() {
       ) : (
         <div className="main">
 
-          {/* 🌳 LEFT (เหมือนเดิม 100%) */}
           <div className="left-panel">
             <div className="tree-section">
-
               {mode === "add" ? (
                 <AddWallet
                   onAdd={handleAddWallet}
@@ -194,11 +182,9 @@ function Home() {
               ) : (
                 <img src={treeImage} alt="tree" />
               )}
-
             </div>
           </div>
 
-          {/* 📊 RIGHT */}
           <div className="right-panel">
 
             <div className="header">
@@ -222,7 +208,6 @@ function Home() {
               </div>
             </div>
 
-            {/* 💼 Wallet */}
             <div className="cards">
               {wallets.length === 0 ? (
                 <p style={{ opacity: 0.5 }}>ยังไม่มีกระเป๋า</p>
