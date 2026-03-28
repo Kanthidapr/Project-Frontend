@@ -9,6 +9,7 @@ import AddWallet from "./AddWallet";
 import DeleteWallet from "./DeleteWallet";
 import TransactionList from "./TransactionList";
 import WalletDetail from "./WalletDetail";
+import ProfileCard from "./ProfileCard"; // ✅ เพิ่ม
 
 function Home() {
   const [transactions, setTransactions] = useState([]);
@@ -16,10 +17,28 @@ function Home() {
   const [mode, setMode] = useState("home");
   const [selectedWallet, setSelectedWallet] = useState(null);
 
+  const [showProfile, setShowProfile] = useState(false); // ✅ เพิ่ม
+
+  const user = {
+    name: "Kanthida",
+    username: "kan_01",
+    id: "10234",
+    avatar: "https://i.imgur.com/1X5QH6V.png"
+  };
+
   useEffect(() => {
     fetchTransactions();
     fetchWallets();
   }, []);
+
+  // ✅ ปิด popup เมื่อคลิกข้างนอก
+  useEffect(() => {
+    const handleClick = () => setShowProfile(false);
+    if (showProfile) {
+      window.addEventListener("click", handleClick);
+    }
+    return () => window.removeEventListener("click", handleClick);
+  }, [showProfile]);
 
   const fetchTransactions = () => {
     fetch("http://127.0.0.1:8000/transactions")
@@ -64,7 +83,6 @@ function Home() {
     }).then(() => fetchWallets());
   };
 
-  // ✅ แก้ตรงนี้: ไม่ยิง DELETE ซ้ำแล้ว
   const handleDeleteWallet = () => {
     fetchWallets();
   };
@@ -118,41 +136,6 @@ function Home() {
             wallet={selectedWallet}
             transactions={transactions}
             onBack={() => setMode("home")}
-
-            onAddTransaction={(tx) => {
-              fetch("http://127.0.0.1:8000/transactions", {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify(tx),
-              }).then(() => {
-                fetchTransactions();
-                fetchWallets();
-              });
-            }}
-
-            onDeleteTransaction={(id) => {
-              fetch(`http://127.0.0.1:8000/transactions/${id}`, {
-                method: "DELETE",
-              }).then(() => {
-                fetchTransactions();
-                fetchWallets();
-              });
-            }}
-
-            onEditTransaction={(tx) => {
-              fetch(`http://127.0.0.1:8000/transactions/${tx.id}`, {
-                method: "PUT",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify(tx),
-              }).then(() => {
-                fetchTransactions();
-                fetchWallets();
-              });
-            }}
           />
         </div>
       ) : mode === "list" ? (
@@ -169,16 +152,9 @@ function Home() {
           <div className="left-panel">
             <div className="tree-section">
               {mode === "add" ? (
-                <AddWallet
-                  onAdd={handleAddWallet}
-                  onClose={() => setMode("home")}
-                />
+                <AddWallet onAdd={handleAddWallet} onClose={() => setMode("home")} />
               ) : mode === "delete" ? (
-                <DeleteWallet
-                  wallets={wallets}
-                  onDelete={handleDeleteWallet}
-                  onClose={() => setMode("home")}
-                />
+                <DeleteWallet wallets={wallets} onDelete={handleDeleteWallet} onClose={() => setMode("home")} />
               ) : (
                 <img src={treeImage} alt="tree" />
               )}
@@ -189,7 +165,26 @@ function Home() {
 
             <div className="header">
               <h3>🌸 Money Tree</h3>
-              <div className="header-right">🔔 👤</div>
+
+              {/* ✅ แก้เฉพาะตรงนี้ */}
+              <div className="header-right" style={{ position: "relative" }}>
+                🔔
+                <span
+                  style={{ marginLeft: 10, cursor: "pointer" }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowProfile(!showProfile);
+                  }}
+                >
+                  👤
+                </span>
+
+                {showProfile && (
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <ProfileCard user={user} />
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="progress-bar">
