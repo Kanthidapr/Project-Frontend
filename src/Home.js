@@ -1,4 +1,4 @@
-import "./Home.css";
+  import "./Home.css";
 import { useEffect, useState } from "react";
  
 import treeSmall from "./assets/tree-small.png";
