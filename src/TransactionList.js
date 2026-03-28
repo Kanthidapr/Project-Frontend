@@ -1,45 +1,68 @@
 import { useState } from "react";
 import "./TransactionList.css";
 
-function TransactionList({
-  transactions,
-  onBack,
-  refreshData
-}) {
+function TransactionList({ transactions, onBack, refreshData }) {
   const [editID, setEditID] = useState(null);
   const [editTitle, setEditTitle] = useState("");
   const [editAmount, setEditAmount] = useState("");
 
-  // ❌ ลบ
-  const handleDelete = (id) => {
-    fetch(`http://192.168.56.1:8000/transactions/${id}`, {
-      method: "DELETE",
-    })
-      .then(() => refreshData())
-      .catch(err => console.error("delete error:", err));
+  const API = "http://127.0.0.1:8000"; // ✅ แก้ IP
+
+  // ✅ DELETE
+  const handleDelete = async (id) => {
+    try {
+      const res = await fetch(`${API}/transactions/${id}`, {
+        method: "DELETE",
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.detail || "ลบไม่สำเร็จ");
+        return;
+      }
+
+      alert("ลบสำเร็จ ✅");
+      refreshData();
+
+    } catch (err) {
+      console.error(err);
+      alert("เชื่อมต่อ server ไม่ได้");
+    }
   };
 
-  // ✏️ edit
-  const handleEdit = (tx) => {
-    fetch(`http://192.168.56.1:8000/transactions/${tx.id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        title: editTitle,
-        amount:
-          tx.type === "expense"
-            ? -Math.abs(Number(editAmount))
-            : Math.abs(Number(editAmount)),
-        wallet: tx.wallet
-      }),
-    })
-      .then(() => {
-        setEditID(null);
-        refreshData();
-      })
-      .catch(err => console.error("edit error:", err));
+  // ✅ EDIT
+  const handleEdit = async (tx) => {
+    try {
+      const res = await fetch(`${API}/transactions/${tx._id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title: editTitle,
+          amount: Math.abs(Number(editAmount)), // ให้ backend จัด + -
+          wallet: tx.wallet,
+          type: tx.type, // ✅ สำคัญ
+          date: tx.date
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.detail || "แก้ไขไม่สำเร็จ");
+        return;
+      }
+
+      alert("บันทึกสำเร็จ ✅");
+      setEditID(null);
+      refreshData();
+
+    } catch (err) {
+      console.error(err);
+      alert("เชื่อมต่อ server ไม่ได้");
+    }
   };
 
   return (
@@ -61,7 +84,7 @@ function TransactionList({
 
         <tbody>
           {transactions.map(tx => (
-            <tr key={tx.id}>
+            <tr key={tx._id}> {/* ✅ ใช้ _id */}
 
               <td>{tx.date}</td>
 
@@ -71,7 +94,7 @@ function TransactionList({
 
               <td>{tx.wallet}</td>
 
-              {editID === tx.id ? (
+              {editID === tx._id ? (
                 <>
                   <td>
                     <input
@@ -109,16 +132,16 @@ function TransactionList({
                   <td>
                     <button
                       onClick={() => {
-                        setEditID(tx.id);
+                        setEditID(tx._id); // ✅
                         setEditTitle(tx.title);
-                        setEditAmount(Math.abs(tx.amount)); // ✅ แก้ตรงนี้
+                        setEditAmount(Math.abs(tx.amount));
                       }}
                     >
                       ✏️
                     </button>
 
                     <button
-                      onClick={() => handleDelete(tx.id)}
+                      onClick={() => handleDelete(tx._id)} // ✅
                       style={{ color: "red", marginLeft: 5 }}
                     >
                       🗑
