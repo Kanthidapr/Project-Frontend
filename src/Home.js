@@ -1,71 +1,82 @@
-  import "./Home.css";
+import "./Home.css";
 import { useEffect, useState } from "react";
- 
+
 import treeSmall from "./assets/tree-small.png";
 import treeMedium from "./assets/tree-medium.png";
 import treeBig from "./assets/tree-big.png";
- 
+
 import AddWallet from "./AddWallet";
 import DeleteWallet from "./DeleteWallet";
 import TransactionList from "./TransactionList";
 import WalletDetail from "./WalletDetail";
-import ProfileCard from "./ProfileCard"; // ✅ เพิ่ม
- 
+import ProfileCard from "./ProfileCard";
+
 function Home() {
   const [transactions, setTransactions] = useState([]);
   const [wallets, setWallets] = useState([]);
   const [mode, setMode] = useState("home");
   const [selectedWallet, setSelectedWallet] = useState(null);
- 
-  // ✅ profile state
   const [showProfile, setShowProfile] = useState(false);
- 
-  // ✅ mock user
-  const user = {
-    name: "Achiraya",
-    username: "achiraya_k",
-    id: "U001",
-    avatar: "https://i.pravatar.cc/150?img=5"
-  };
- 
+  const [user, setUser] = useState(null);
+
   useEffect(() => {
     fetchTransactions();
     fetchWallets();
+
+    const savedUser = localStorage.getItem("user");
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));
+    }
   }, []);
- 
+
+  // ---------------- FETCH TRANSACTIONS ----------------
   const fetchTransactions = () => {
     fetch("http://127.0.0.1:8000/transactions")
-      .then(res => res.json())
-      .then(data => {
-        const formatted = data.map(t => ({
-          ...t,
-          id: t._id,
-          type: t.amount > 0 ? "income" : "expense"
-        }));
+      .then((res) => res.json())
+      .then((data) => {
+        const formatted = Array.isArray(data)
+          ? data.map((t) => ({
+              ...t,
+              id: t._id,
+              type: t.amount > 0 ? "income" : "expense",
+            }))
+          : [];
+
         setTransactions(formatted);
-      });
+      })
+      .catch(() => setTransactions([]));
   };
- 
+
+  // ---------------- FETCH WALLETS ----------------
   const fetchWallets = () => {
     fetch("http://127.0.0.1:8000/wallets")
-      .then(res => res.json())
-      .then(data => setWallets(data));
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setWallets(data);
+        } else {
+          setWallets([]);
+        }
+      })
+      .catch(() => setWallets([]));
   };
- 
+
+  // ---------------- SUMMARY ----------------
   const income = transactions
-    .filter(t => t.type === "income")
+    .filter((t) => t.type === "income")
     .reduce((sum, t) => sum + Math.abs(t.amount), 0);
- 
+
   const expense = transactions
-    .filter(t => t.type === "expense")
+    .filter((t) => t.type === "expense")
     .reduce((sum, t) => sum + Math.abs(t.amount), 0);
- 
+
   const balance = income - expense;
- 
+
   let treeImage = treeSmall;
   if (balance > 5000) treeImage = treeBig;
   else if (balance > 1000) treeImage = treeMedium;
- 
+
+  // ---------------- WALLET ----------------
   const handleAddWallet = (walletName) => {
     fetch("http://127.0.0.1:8000/wallets", {
       method: "POST",
@@ -75,35 +86,25 @@ function Home() {
       body: JSON.stringify({ name: walletName, balance: 0 }),
     }).then(() => fetchWallets());
   };
- 
+
   const handleDeleteWallet = () => {
     fetchWallets();
   };
- 
-  const handleDeleteTransaction = (id) => {
-    fetch(`http://127.0.0.1:8000/transactions/${id}`, {
-      method: "DELETE",
-    }).then(() => {
-      fetchTransactions();
-      fetchWallets();
-    });
-  };
- 
+
   return (
     <div className="home-container">
- 
       {/* SIDEBAR */}
       <div className="sidebar">
         <h2>🌸 Money Tree</h2>
- 
+
         <button onClick={() => setMode("home")}>หน้าหลัก</button>
         <button onClick={() => setMode("add")}>เพิ่มกระเป๋า</button>
         <button onClick={() => setMode("delete")}>ลบกระเป๋า</button>
         <button onClick={() => setMode("list")}>รายการ</button>
- 
+
         <div className="sidebar-recent">
           <h4>รายการล่าสุด</h4>
- 
+
           {transactions.length === 0 ? (
             <p style={{ opacity: 0.5 }}>ยังไม่มีรายการ</p>
           ) : (
@@ -113,7 +114,7 @@ function Home() {
                   <div className="recent-date">{t.date}</div>
                   <div className="recent-title">{t.title}</div>
                 </div>
- 
+
                 <div className={`recent-amount ${t.type}`}>
                   {t.type === "income" ? "+" : "-"}
                   {Math.abs(t.amount)}
@@ -123,7 +124,7 @@ function Home() {
           )}
         </div>
       </div>
- 
+
       {/* MAIN */}
       {mode === "walletDetail" ? (
         <div className="main full">
@@ -131,7 +132,6 @@ function Home() {
             wallet={selectedWallet}
             transactions={transactions}
             onBack={() => setMode("home")}
- 
             onAddTransaction={(tx) => {
               fetch("http://127.0.0.1:8000/transactions", {
                 method: "POST",
@@ -142,7 +142,6 @@ function Home() {
                 fetchWallets();
               });
             }}
- 
             onDeleteTransaction={(id) => {
               fetch(`http://127.0.0.1:8000/transactions/${id}`, {
                 method: "DELETE",
@@ -151,9 +150,8 @@ function Home() {
                 fetchWallets();
               });
             }}
- 
             onEditTransaction={(tx) => {
-              fetch(`http://127.0.0.1:8000/transactions/${tx.id}`, {
+              fetch(`http://127.0.0.1:8000/transactions/${tx._id}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(tx),
@@ -168,33 +166,38 @@ function Home() {
         <div className="main full">
           <TransactionList
             transactions={transactions}
-            onDeleteTransaction={handleDeleteTransaction}
             onBack={() => setMode("home")}
+            refreshData={() => {
+              fetchTransactions();
+              fetchWallets();
+            }}
           />
         </div>
       ) : (
         <div className="main">
- 
-          {/* LEFT */}
           <div className="left-panel">
             <div className="tree-section">
               {mode === "add" ? (
-                <AddWallet onAdd={handleAddWallet} onClose={() => setMode("home")} />
+                <AddWallet
+                  onAdd={handleAddWallet}
+                  onClose={() => setMode("home")}
+                />
               ) : mode === "delete" ? (
-                <DeleteWallet wallets={wallets} onDelete={handleDeleteWallet} onClose={() => setMode("home")} />
+                <DeleteWallet
+                  wallets={wallets}
+                  onDelete={handleDeleteWallet}
+                  onClose={() => setMode("home")}
+                />
               ) : (
                 <img src={treeImage} alt="tree" />
               )}
             </div>
           </div>
- 
-          {/* RIGHT */}
+
           <div className="right-panel">
- 
-            {/* HEADER */}
             <div className="header">
               <h3>🌸 Money Tree</h3>
- 
+
               <div className="header-right">
                 🔔
                 <span
@@ -205,31 +208,26 @@ function Home() {
                 </span>
               </div>
             </div>
- 
-            {/* ✅ PROFILE CARD */}
-            {showProfile && <ProfileCard user={user} />}
- 
-            <div className="progress-bar">
-              <div className="progress-fill"></div>
-            </div>
- 
+
+            {showProfile && user && <ProfileCard user={user} />}
+
             <div className="summary">
               <div className="card income">
                 <p>รายรับ</p>
                 <h3>+{income} บาท</h3>
               </div>
- 
+
               <div className="card expense">
                 <p>รายจ่าย</p>
                 <h3>-{expense} บาท</h3>
               </div>
             </div>
- 
+
             <div className="cards">
-              {wallets.length === 0 ? (
+              {!Array.isArray(wallets) || wallets.length === 0 ? (
                 <p style={{ opacity: 0.5 }}>ยังไม่มีกระเป๋า</p>
               ) : (
-                wallets.map(w => (
+                wallets.map((w) => (
                   <div
                     key={w._id}
                     className="item-card"
@@ -245,13 +243,11 @@ function Home() {
                 ))
               )}
             </div>
- 
           </div>
         </div>
       )}
     </div>
   );
 }
- 
+
 export default Home;
- 

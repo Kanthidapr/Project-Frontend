@@ -19,6 +19,7 @@ function WalletDetail({
   const [editAmount, setEditAmount] = useState("");
   const [editType, setEditType] = useState("income");
 
+  // ✅ ADD (แก้ตรงนี้)
   const handleAdd = () => {
     if (!title || !amount) return;
 
@@ -26,9 +27,10 @@ function WalletDetail({
 
     const newTx = {
       title,
-      amount: type === "expense" ? -Math.abs(num) : Math.abs(num),
+      amount: Math.abs(num), // ✅ backend จะจัด + - ให้
       wallet: wallet.name,
       date: date || new Date().toISOString().slice(0, 10),
+      type: type // ✅ สำคัญมาก
     };
 
     onAddTransaction(newTx);
@@ -84,9 +86,9 @@ function WalletDetail({
           <p style={{ opacity: 0.5 }}>ยังไม่มีรายการ</p>
         ) : (
           walletTx.map(tx => (
-            <div key={tx.id} className="tx-item">
+            <div key={tx._id} className="tx-item">
 
-              {editID === tx.id ? (
+              {editID === tx._id ? (
                 <>
                   <input
                     value={editTitle}
@@ -113,10 +115,8 @@ function WalletDetail({
                       onEditTransaction({
                         ...tx,
                         title: editTitle,
-                        amount:
-                          editType === "expense"
-                            ? -Math.abs(num)
-                            : Math.abs(num),
+                        amount: Math.abs(num), // ✅ backend จัดการเอง
+                        type: editType
                       });
 
                       setEditID(null);
@@ -139,7 +139,7 @@ function WalletDetail({
 
                   <button
                     onClick={() => {
-                      setEditID(tx.id);
+                      setEditID(tx._id);
                       setEditTitle(tx.title);
                       setEditAmount(Math.abs(tx.amount));
                       setEditType(tx.type);
@@ -148,7 +148,7 @@ function WalletDetail({
                     ✏️
                   </button>
 
-                  <button onClick={() => onDeleteTransaction(tx.id)}>
+                  <button onClick={() => onDeleteTransaction(tx._id)}>
                     🗑
                   </button>
                 </>
